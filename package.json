@@ -1,0 +1,60 @@
+{
+	"name": "hello-world-vm06007",
+	"description": "Hello, Vitally Marinchenko",
+	"version": "1.0.0",
+	"scripts": {
+		"chain": "ganache-cli --defaultBalanceEther 10000000 -i 5777 -p 9545 -l 12500000 -m \"urban prevent meadow draft involve security curtain robot brick question try scatter\"",
+		"deploy-token": "node deploy-token.js",
+		"compile": "truffle compile",
+		"test-token": "npx truffle test test/token.test.js",
+		"test-wraps": "npx truffle test test/wraps.test.js",
+		"coverage": "npx truffle run coverage --network development"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vm06007"
+	},
+	"keywords": [
+		"solidity",
+		"ethereum",
+		"smart",
+		"contracts",
+		"security"
+	],
+	"author": "Vitally Marinchenko",
+	"bugs": {
+		"url": "https://github.com/vm06007"
+	},
+	"homepage": "https://github.com/vm06007",
+	"devDependencies": {
+		"chai": "^4.2.0",
+		"eslint": "^6.5.1",
+		"eslint-config-standard": "^14.1.1",
+		"eslint-plugin-import": "^2.20.0",
+		"eslint-plugin-mocha-no-only": "^1.1.0",
+		"eslint-plugin-node": "^10.0.0",
+		"eslint-plugin-promise": "^4.2.1",
+		"eslint-plugin-standard": "^4.0.1",
+		"eth-sig-util": "^3.0.0",
+		"ethereumjs-util": "^7.0.7",
+		"ethereumjs-wallet": "^1.0.1",
+		"ganache-time-traveler": "^1.0.16",
+		"graphlib": "^2.1.8",
+		"hardhat-gas-reporter": "^1.0.4",
+		"keccak256": "^1.0.2",
+		"lodash.startcase": "^4.4.0",
+		"lodash.zip": "4.2.0",
+		"merkletreejs": "^0.2.13",
+		"micromatch": "^4.0.2",
+		"prettier": "^2.3.0",
+		"prettier-plugin-solidity": "^1.0.0-beta.16",
+		"rimraf": "^3.0.2",
+		"solhint": "^3.3.6",
+		"solidity-ast": "^0.4.25",
+		"solidity-coverage": "0.8.0-rc.1",
+		"solidity-docgen": "^0.5.3",
+		"truffle": "*",
+		"web3": "^1.3.0",
+		"yargs": "^16.2.0"
+	}
+}
