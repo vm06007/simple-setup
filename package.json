@@ -8,6 +8,7 @@
 		"compile": "truffle compile",
 		"test-token": "npx truffle test test/token.test.js",
 		"test-wraps": "npx truffle test test/wraps.test.js",
+		"test-token-keeper": "npx truffle test test/tokenKeeper.test.js",
 		"coverage": "npx truffle run coverage --network development"
 	},
 	"repository": {
