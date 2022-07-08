@@ -4,8 +4,10 @@ const catchRevert = require("./exceptionsHelpers.js").catchRevert;
 require("./utils");
 
 // TODO:
-const TOKENS_OPENED = web3.utils.toWei("3");
-const TOKENS_LOCKED = web3.utils.toWei("5");
+const FOUR_ETH = web3.utils.toWei("3");
+const FIVE_ETH = web3.utils.toWei("5");
+const MIN_TIME_FRAME = null;
+const INVALID_TIME_FRAME = null;
 
 contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
@@ -13,48 +15,29 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
     beforeEach(async () => {
         // TODO: check params
-        tokenKeeper = await TokenKeeper.new(owner, 10, alice);
+        tokenKeeper = await TokenKeeper.new(owner, MIN_TIME_FRAME, alice);
     });
 
     describe("Allocation Functionality", () => {
-
-        it("should allocate correct values", () => {
-            const currentTime = await tokenKeeper.getNow();
-            const timeFrame = currentTime + 10;
-
-            await tokenKeeper.allocateToken(
-                alice,
-                TOKENS_OPENED,
-                TOKENS_LOCKED,
-                timeFrame
+        it("should have correct token keeper", async () => {
+            const name = await tokenKeeper.name();
+            assert.equal(
+                name,
+                "TokenKeeper"
             );
-
-            const keeper = await tokenKeeper.keeperList.call(alice);
-            const totalRequired = await tokenKeeper.totalRequired.call();
-            
-            assert.equal(keeper.keeperRate, TOKENS_LOCKED / timeFrame);
-            assert.equal(keeper.keeperBalance, TOKENS_LOCKED % timeFrame + TOKENS_OPENED);
-            assert.equal(keeper.keeperBalance, TOKENS_LOCKED % timeFrame + TOKENS_OPENED);
-            assert.equal(totalRequired, TOKENS_OPENED + TOKENS_LOCKED);
-
-
         });
 
         it("should not allocate tokens with invalid time frame", () => {
-            const currentTime = await tokenKeeper.getNow();
-            const timeFrame = currentTime - 10;
-
-            await tokenKeeper.allocateToken(
-                alice,
-                TOKENS_OPENED,
-                TOKENS_LOCKED,
-                timeFrame
+            // TODO: check params
+            await tokenKeeper.allocateTokens(
+                owner,
+                FOUR_ETH,
+                FIVE_ETH,
+                INVALID_TIME_FRAME
             )
 
-            const keeper = await tokenKeeper.keeperList.call(alice);
-
-            assert.equal(keeper.keeperBalance, 0)
-        });
+            const balance = await tokenKeeper.availableBalance(owner);
+        })
     })
 
 })
