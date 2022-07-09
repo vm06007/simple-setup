@@ -1,3 +1,4 @@
+const Token = artifacts.require("Token");
 const TokenKeeper = artifacts.require("TokenKeeper");
 const catchRevert = require("./exceptionsHelpers.js").catchRevert;
 
@@ -6,15 +7,26 @@ require("./utils");
 // TODO:
 const TOKENS_OPENED = web3.utils.toWei("3");
 const TOKENS_LOCKED = web3.utils.toWei("5");
-
+const HUNDERD_TOKENS = web3.utils.toWei("100");
 
 contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
+    let token;
     let tokenKeeper;
 
     beforeEach(async () => {
         // TODO: check minTimeFrame and tokenAddress
-        tokenKeeper = await TokenKeeper.new(owner, 165728454510, owner);
+        token = await Token.new();
+        tokenKeeper = await TokenKeeper.new(
+            owner,
+            300,
+            token.address
+        );
+
+        token.transfer(
+            tokenKeeper.address,
+            HUNDERD_TOKENS
+        );
     });
 
     describe("Allocation Functionality", () => {
@@ -22,7 +34,7 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
         it("should not allocate tokens with invalid time frame", async () => {
             const currentTime = await tokenKeeper.getNow();
             const timeFrame = currentTime - 10;
-            
+
             let Error;
             try {
                 await tokenKeeper.allocateTokens(
@@ -34,12 +46,20 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
             } catch (error) {
                 Error = error;
             }
-            
-            assert.notEqual(Error, undefined);
-            assert.equal(Error.reason, "TokenKeeper: INVALID_TIME_FRAME");
+
+            assert.notEqual(
+                Error,
+                undefined
+            );
+
+            assert.equal(
+                Error.reason,
+                "TokenKeeper: INVALID_TIME_FRAME"
+            );
         });
 
         it("should allocate correct values", async () => {
+
             const currentTime = await tokenKeeper.getNow();
             const timeFrame = currentTime + 10;
 
@@ -50,16 +70,31 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
                 timeFrame
             );
 
-            const keeper = await tokenKeeper.keeperList.call(alice);
+            const keeper = await tokenKeeper.keeperList.call(
+                alice
+            );
+
             const totalRequired = await tokenKeeper.totalRequired.call();
 
-            assert.equal(keeper.keeperRate, Math.trunc(TOKENS_LOCKED / timeFrame));
-            assert.equal(keeper.keeperBalance, TOKENS_LOCKED % timeFrame + TOKENS_OPENED);
-            assert.equal(keeper.keeperBalance, TOKENS_LOCKED % timeFrame + TOKENS_OPENED);
-            assert.equal(totalRequired, TOKENS_OPENED + TOKENS_LOCKED);
+            assert.equal(
+                keeper.keeperRate,
+                Math.trunc(TOKENS_LOCKED / timeFrame)
+            );
 
+            assert.equal(
+                keeper.keeperBalance,
+                TOKENS_LOCKED % timeFrame + TOKENS_OPENED
+            );
+
+            assert.equal(
+                keeper.keeperBalance,
+                TOKENS_LOCKED % timeFrame + TOKENS_OPENED
+            );
+
+            assert.equal(
+                totalRequired,
+                TOKENS_OPENED + TOKENS_LOCKED
+            );
         });
     })
-
 })
-
