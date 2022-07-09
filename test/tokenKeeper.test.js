@@ -7,7 +7,7 @@ require("./utils");
 // TODO:
 const TOKENS_OPENED = web3.utils.toWei("3");
 const TOKENS_LOCKED = web3.utils.toWei("5");
-const HUNDERD_TOKENS = web3.utils.toWei("100");
+const HUNDRED_TOKENS = web3.utils.toWei("100");
 
 contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
@@ -25,7 +25,7 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
         token.transfer(
             tokenKeeper.address,
-            HUNDERD_TOKENS
+            HUNDRED_TOKENS
         );
     });
 
