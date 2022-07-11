@@ -25,23 +25,17 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
     describe("Allocation Functionality", () => {
 
         it("should not allocate tokens with invalid time frame", async () => {
-            const currentTime = await tokenKeeper.getNow();
+
             const timeFrame = MIN_TIME_FRAME / 2;
-            
-            let Error;
-            try {
-                await tokenKeeper.allocateTokens(
+            await catchRevert(
+                tokenKeeper.allocateTokens(
                     owner,
                     TOKENS_OPENED,
                     TOKENS_LOCKED,
                     timeFrame
-                );
-            } catch (error) {
-                Error = error;
-            }
-            
-            assert.notEqual(Error, undefined);
-            assert.equal(Error.reason, "TokenKeeper: INVALID_TIME_FRAME");
+                ),
+                "TokenKeeper: INVALID_TIME_FRAME"
+            );
         });
 
         it("should allocate correct values", async () => {
@@ -62,8 +56,10 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
 
             assert.equal(totalRequired, Number(TOKENS_OPENED) + Number(TOKENS_LOCKED));
 
+            assert.equal(
+                totalRequired,
+                TOKENS_OPENED + TOKENS_LOCKED
+            );
         });
     })
-
 })
-
