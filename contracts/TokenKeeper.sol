@@ -66,12 +66,12 @@ contract TokenKeeper {
 
     function allocateTokensBulk(
         address[] memory _recipients,
-        uint256[] memory _tokensOpened,
-        uint256[] memory _tokensLocked,
-        uint256[] memory _timeFrame
+        uint256[] memory _tokensOpened, // available instantly
+        uint256[] memory _tokensLocked, // locked amount
+        uint256[] memory _timeFrame // lock period
     )
-        external
-        onlyTokenKeeper
+        external 
+        onlyTokenKeeper /** only msg.sender can allocate */
     {
         for (uint256 i = 0; i < _recipients.length; i++) {
             allocateTokens(
@@ -85,12 +85,12 @@ contract TokenKeeper {
 
     function allocateTokens(
         address _recipient,
-        uint256 _tokensOpened,
-        uint256 _tokensLocked,
-        uint256 _timeFrame
+        uint256 _tokensOpened, // available instantly
+        uint256 _tokensLocked, // locked amount
+        uint256 _timeFrame // lock period
     )
         public
-        onlyTokenKeeper
+        onlyTokenKeeper /** only msg.sender can allocate */
     {
         require(
             _timeFrame >= minTimeFrame,
@@ -101,12 +101,14 @@ contract TokenKeeper {
             + _tokensOpened
             + _tokensLocked;
 
+        // validate token address balance
         _checkTokenBalance(
             totalRequired
         );
 
         uint256 timestamp = getNow();
 
+        // add allocation to keeper list
         keeperList[_recipient].keeperFrom = timestamp;
         keeperList[_recipient].keeperTill = timestamp
             + _timeFrame;
@@ -140,12 +142,15 @@ contract TokenKeeper {
     )
         private
     {
+        // get calculated allocation balance
         uint256 scrapeAmount = availableBalance(
             _recipient
         );
 
+        // add scrape amount to recipient payout
         keeperList[_recipient].keeperPayouts += scrapeAmount;
 
+        // transfer scrape amount to recipient address
         _safeTokenScrape(
             _recipient,
             scrapeAmount
@@ -165,6 +170,11 @@ contract TokenKeeper {
         view
         returns (uint256 balance)
     {
+        /**
+            if current time is within timeFrame,
+            timePassed is diff between now and allocation time else 
+            timePassed is allocation timeFrame
+        */
         uint256 timePassed =
             getNow() < keeperList[_recipient].keeperTill ?
             getNow() - keeperList[_recipient].keeperFrom : _diff(_recipient);
@@ -182,6 +192,10 @@ contract TokenKeeper {
         view
         returns (uint256 balance)
     {
+        /**
+            if current time is before allocation timeFrame
+            timeRemaining is time passed since allocation timeFrame
+         */
         uint256 timeRemaining =
             keeperList[_recipient].keeperTill > getNow() ?
             keeperList[_recipient].keeperTill - getNow() : 0;
@@ -212,6 +226,7 @@ contract TokenKeeper {
         view
         returns (uint256 res)
     {
+        // get timeFrame
         res = keeperList[_recipient].keeperTill
             - keeperList[_recipient].keeperFrom;
     }
@@ -238,8 +253,10 @@ contract TokenKeeper {
     )
         private
     {
+        // remove scrape amount from token totalRequired
         totalRequired -= _scrapeAmount;
 
+        // transfer scrape amount to recipient
         (bool success, bytes memory data) = tokenAddress.call(
             abi.encodeWithSelector(
                 TRANSFER,
@@ -270,6 +287,7 @@ contract TokenKeeper {
             )
         );
 
+        // check if token address balance is greater that totalRequired
         require(
             success && abi.decode(
                 data, (uint256)
