@@ -1,3 +1,5 @@
+const { assert } = require("chai");
+
 const Token = artifacts.require("Token");
 const TokenKeeper = artifacts.require("TokenKeeper");
 const catchRevert = require("./exceptionsHelpers.js").catchRevert;
@@ -189,6 +191,10 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
             );
 
             const updatedTokenBalance = await token.balanceOf(owner);
+            assert.equal(
+                parseInt(updatedTokenBalance),
+                parseInt(expectedBalance)
+            );
 
         });
     })
