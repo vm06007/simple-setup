@@ -19,7 +19,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const FOUR_ETH = web3.utils.toWei("4");
 const TOKENS_OPENED = web3.utils.toWei("2");
 const TOKENS_LOCKED = web3.utils.toWei("1");
-const MIN_TIME_FRAME = 1;
+const MIN_TIME_FRAME = 2;
 
 
 contract("TokenKeeper", ([owner, alice, bob, random]) => {
@@ -243,11 +243,57 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
             );
         });
 
+        it ("should not allocate tokens when sender is not token keeper", async () => {
+
+            const newTokenKeeper = await TokenKeeper.new(
+                alice, 
+                MIN_TIME_FRAME, 
+                token.address
+            );
+
+            await catchRevert(
+                newTokenKeeper.allocateTokens(
+                        bob, 
+                        TOKENS_OPENED, 
+                        TOKENS_LOCKED, 
+                        MIN_TIME_FRAME
+                ),
+                "TokenKeeper: ACCESS_DENIED"
+            );
+        });
+    
+        it("should not allocate tokens in bulk when sender is not token keeper", async () => {
+
+            const newTokenKeeper = await TokenKeeper.new(
+                alice, 
+                MIN_TIME_FRAME, 
+                token.address
+            );
+
+            const recipientList = [owner];
+
+            const tokensOpenedList = Array(recipientList.length).fill(TOKENS_OPENED);
+
+            const tokensLockedList = Array(recipientList.length).fill(TOKENS_LOCKED);
+
+            const timeFrameList = Array(recipientList.length).fill(MIN_TIME_FRAME);
+
+            await catchRevert(
+                newTokenKeeper.allocateTokensBulk(
+                    recipientList,
+                    tokensOpenedList,
+                    tokensLockedList,
+                    timeFrameList
+                ),
+                "TokenKeeper: ACCESS_DENIED"
+            );
+        });
+
         it("should not allocate tokens with invalid time frame", async () => {
 
             const timeFrame = MIN_TIME_FRAME / 2;
 
-            const result = await catchRevert(
+           await catchRevert(
                 tokenKeeper.allocateTokens(
                     alice,
                     TOKENS_OPENED,
@@ -255,6 +301,27 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
                     timeFrame
                 ),
                 "TokenKeeper: INVALID_TIME_FRAME"
+            );
+        });
+
+        it("should not allocate tokens when token address balance is insufficient", async () => {
+
+            const timeFrame = MIN_TIME_FRAME * 2;
+
+            newTokenKeeper = await TokenKeeper.new(
+                owner, 
+                MIN_TIME_FRAME, 
+                token.address
+            );
+
+            await catchRevert(
+                newTokenKeeper.allocateTokens(
+                    alice,
+                    TOKENS_OPENED,
+                    TOKENS_LOCKED,
+                    timeFrame
+                ),
+                "TokenKeeper: BALANCE_CHECK_FAILED"
             );
         });
     })
@@ -432,7 +499,22 @@ contract("TokenKeeper", ([owner, alice, bob, random]) => {
             
             assert.equal(keeper.toString(), ZERO_ADDRESS);
 
-        });        
+        });     
+        
+        it("should not renounce ownership when sender is not token keeper", async () => {
+            
+            const newTokenKeeper = await TokenKeeper.new(
+                alice, 
+                MIN_TIME_FRAME, 
+                token.address
+            );
+
+            await catchRevert(
+                newTokenKeeper.renounceOwnership(),
+                "TokenKeeper: ACCESS_DENIED"
+            );
+
+        });     
     })
 
 })
